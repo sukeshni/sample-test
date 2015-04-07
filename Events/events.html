@@ -1,0 +1,173 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="">
+
+    <title>Events</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="./css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="./css/jumbotron-narrow.css" rel="stylesheet">
+    <script type="text/javascript" src="./js/jquery.min.js"></script>
+  </head>
+
+  <body>
+
+    <div class="container">
+      <div class="header clearfix">
+        <nav>
+          <ul id="nav-links" class="nav nav-pills pull-right">
+          </ul>
+        </nav>
+        <a href="./index.html" style="text-decoration:none;"><h3 class="text-muted">Meetup</h3></a>
+      </div>
+      <div id="event-board">  
+      
+      </div><!-- /event-board -->
+      <footer class="footer">
+        <p>&copy; Sukeshni Kantrod 2014</p>
+      </footer>
+
+    </div> <!-- /container -->
+  </body>
+</html>
+
+
+<script type="text/javascript">
+
+function getDateToday() {
+  var today = new Date();
+  var dd = today.getDate();
+  var mm = today.getMonth()+1; //January is 0!
+  var yyyy = today.getFullYear();
+  if(dd<10){
+    dd='0'+dd
+  } 
+  if(mm<10){
+    mm='0'+mm
+  } 
+  return today = yyyy+'-'+mm+'-'+dd;
+}
+  
+  if (sessionStorage.getItem("user.name") !== null) {
+
+    //================ Navigation
+    $("#nav-links").append('<li role="presentation"><a href="#">'+sessionStorage.getItem("user.name")+'</a></li>');
+    $("#nav-links").append('<li role="presentation"><a href="./signout.html"><b>Log out</b></a></li>');
+
+
+    var tokenID = sessionStorage.getItem("user.tokenID");
+
+    if (sessionStorage.getItem("user.groupID") == 2) {
+          //================ Companies Events
+
+      
+      var today = getDateToday();
+
+      var company_event = '<div class="page-header"><h1>Your Events</h1></div><p class="lead">Events that you have planned to host.</p>';
+
+      $("#event-board").append(company_event);
+
+      $.post( "/api/companies/events", { token: tokenID, from: today })
+      .done(function( data ) {
+        console.log(data);
+        data = $.parseJSON(data);
+        var events = data.events;
+        var items = [];
+        $.each( events, function( key, val ) {
+          items.push( "<tr>"+"<td>" + val.name + "</td>" + "<td>" + val.start_date + "</td>"+"<td>" + val.number_of_attendees + "</td>"+"</tr>" );
+        });
+
+        var thead = "<thead><th>Event</th><th>Start Date</th><th>Attendees</th></tr></thead>";
+        var tbody = "<tbody>" + items.join("") + "</tbody>";
+
+        $( "<table/>", {
+        "class": "table table-hover",
+        html: thead+tbody
+      }).appendTo( "#event-board" );
+
+      });
+    }
+    if (sessionStorage.getItem("user.groupID") == 1) {
+
+      list_public_events("student_user");
+    }
+  }
+  else {
+    //================ Navigation
+    $("#nav-links").append('<li role="presentation"><a href="./signin.html">Sign In</a></li>');
+
+    list_public_events();
+  }
+
+  function list_public_events(user) {
+    var student_user = false;
+    if (typeof user !== 'undefined' && user == "student_user") {
+      student_user = true;
+    }
+        //================ Events
+    var public_event = '<div class="page-header">'+
+        '<h1>Public Events</h1>'+
+      '</div>'+
+      '<p class="lead">Events hosted by the companies around you.</p>';
+
+    $("#event-board").append(public_event);
+    var today = getDateToday();
+    $.getJSON( "/api/users/events?from=2012-01-01", function( data ) {
+      console.log(data);
+      var events = data.events;
+      var items = [];
+      $.each( events, function( key, val ) {
+        var td = "<tr>"+"<td>" + val.name + "</td>" + "<td>" + val.start_date + "</td>";
+        if (student_user == true) td += '<td id="event_action"><a '+'id="'+val.id+'" class="btn btn-primary" role="button">Reserve</a></td>';
+        td += "</tr>";
+        items.push( td );
+      });
+
+      var thead = "<thead><th>Event</th><th>Start Date</th></th>";
+      if (student_user == true) thead += "<th>Action</th>";
+      thead += "</thead>";
+      var tbody = "<tbody>" + items.join("") + "</tbody>";
+
+      $( "<table/>", {
+        "class": "table table-hover",
+        html: thead+tbody
+      }).appendTo( "#event-board" );
+
+      reserve_event();
+    });
+  }
+
+function reserve_event() {
+      $("#event_action a").click(function(e) {
+        var tokenID = sessionStorage.getItem("user.tokenID");
+        var event_id = e.target.id;
+        var reserve = ($(e.target).text()) == "Reserve" ? "true" : "false";
+        $.post( "/api/users/reserve", { token: tokenID, event_id: event_id, reserve: reserve})
+        .done(function( data ) {
+          console.log(data);
+          data = $.parseJSON(data);
+          if (data.code == 200) {
+            if (data.message == "RESERVED") {$(e.target).text("Unreserve");$(e.target).attr('class', 'btn btn-danger');}
+            else {$(e.target).text("Reserve");$(e.target).attr('class', 'btn btn-primary');}
+          }
+          if (data.code == 501) {
+            if (data.message == "Already Reserved") {$(e.target).text("Unreserve");$(e.target).attr('class', 'btn btn-danger');}
+          } 
+        });
+    });  
+}
+
+  
+
+  console.log(sessionStorage.getItem("user.name"));
+  console.log(sessionStorage.getItem("user.groupID"));
+</script>

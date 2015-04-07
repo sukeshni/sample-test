@@ -1,0 +1,91 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="">
+
+    <title>Signin Meetups</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="./css/bootstrap.min.css" rel="stylesheet">
+
+    <link href="./css/jumbotron-narrow.css" rel="stylesheet">
+    <link href="./css/signin.css" rel="stylesheet">
+    <script type="text/javascript" src="./js/jquery.min.js"></script>
+  </head>
+
+  <body>
+
+  <script type="text/javascript">
+  //if user logged in then redirect
+  if (sessionStorage.getItem("user.name") !== null) {
+    window.open('events.html', '_self');
+  }
+  </script>
+
+    <div class="container">
+    <div class="header clearfix">
+        <nav>
+          <ul class="nav nav-pills pull-right">
+          </ul>
+        </nav>
+        <a href="./index.html" style="text-decoration:none;"><h3 class="text-muted">Meetups</h3></a>
+    </div>
+
+      <form class="form-signin" id="user_login" method="post" action="#" onsubmit="return false;" >
+        <h2 class="form-signin-heading">Sign in</h2>
+        <label for="inputEmail" class="sr-only">Email address</label>
+        <input name="email" type="email" id="inputEmail" class="form-control" placeholder="Email address" value="user1@test.com" required autofocus>
+        <label for="inputPassword" class="sr-only">Password</label>
+        <input name="password" type="password" id="inputPassword" class="form-control" placeholder="Password" value="password" required>
+        <div class="checkbox">
+          <!-- <label>
+            <input type="checkbox" value="remember-me"> Remember me
+          </label> -->
+        </div>
+        <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
+      </form>
+
+    </div> <!-- /container -->
+  </body>
+</html>
+
+<script type="text/javascript">
+$(document)
+.on("submit", "#user_login", function(){
+  if(form_validate("login")){
+    $.post('/api/auth/login', $(this).serialize(), function(data){
+      data = $.parseJSON(data);
+      if(data.code === 500){
+        $("#error").remove();
+        $("#user_login").prepend('<div id="error" class="alert alert-danger" role="alert">Email or Password is incorrect</div>');
+      } else if (data.code == 200){
+        sessionStorage.setItem("user.name",data.user.name);
+        sessionStorage.setItem("user.groupID",data.user.group_id);
+        sessionStorage.setItem("user.tokenID",data.token);
+        window.open('events.html', '_self');  
+      }
+    });
+  }
+})
+;
+
+function form_validate(){
+    if($("#inputEmail").val() === ''){
+      alert("Must provide a username");
+      $("#inputEmail").focus();
+      return false;
+    }
+    if($("#inputPassword").val() === ''){
+      alert("Must provide a password");
+      $("#inputPassword").focus();
+      return false;
+    }
+    return true;
+} 
+</script>
