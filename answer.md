@@ -3,7 +3,6 @@
 If I am the manager of this project and if I could change the specification of this app, I would
 
 1. Consider RESTful principles to handle CRUD actions :
-
 *Change the following endpoint
 - POST api/companies/events ---> GET api/companies/events
 
@@ -11,12 +10,9 @@ Because the endpoint performs the read/retrieve/search records from the database
 
 *Change the following endpoint
 - POST api/users/reserve
-					 Reserve ---> PUT api/users/:event_id/reserve
-					Unreserve ---> DELETE api/users/:event_id/reserve.
-
-
+	Reserve ---> PUT api/users/:event_id/reserve
+	Unreserve ---> DELETE api/users/:event_id/reserve.
 Because the endpoint performs the update/modify and delete/destroy operation on the database
-
 
 2.Each request to API comes with "token" field. This token is to be used for identifying users. Generation of token should be such that, it helps identify user, also gives expiry information.
 
