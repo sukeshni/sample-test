@@ -14,7 +14,7 @@ Because the endpoint performs the read/retrieve/search records from the database
 	Unreserve ---> DELETE api/users/:event_id/reserve.
 Because the endpoint performs the update/modify and delete/destroy operation on the database
 
-2.Each request to API comes with "token" field. This token is to be used for identifying users. Generation of token should be such that, it helps identify user, also gives expiry information.
+2. Each request to API comes with "token" field. This token is to be used for identifying users. Generation of token should be such that, it helps identify user, also gives expiry information.
 
 3. Pagination data in response can be included so that clients can handle the data well. Also a readymade link n the response to request next set of requests for the events list.
 
